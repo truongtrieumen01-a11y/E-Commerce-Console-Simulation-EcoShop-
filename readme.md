@@ -35,7 +35,7 @@ classDiagram
     }
 
     class User {
-        <<abstract>>
+        <<abstract>>         
         #String id
         #String username
         #String password
