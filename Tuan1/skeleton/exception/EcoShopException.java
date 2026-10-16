@@ -1,5 +1,5 @@
 package skeleton.exception;
-
+ 
 /**
  * Lớp ngoại lệ cơ sở (Base Exception) cho toàn bộ hệ sinh thái EcoShop.
  *
