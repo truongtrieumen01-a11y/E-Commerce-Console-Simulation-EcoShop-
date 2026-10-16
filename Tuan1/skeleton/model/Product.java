@@ -1,5 +1,5 @@
 package skeleton.model;
-
+ 
 /**
  * Lớp Product — Đại diện cho một sản phẩm trong kho hàng EcoShop.
  *
