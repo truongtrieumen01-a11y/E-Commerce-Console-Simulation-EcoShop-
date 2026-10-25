@@ -1,0 +1,290 @@
+@startuml EcoShop_Class_Diagram
+
+skinparam classAttributeIconSize 0
+skinparam classFontSize 13
+skinparam packageFontSize 15
+skinparam shadowing false
+skinparam roundcorner 8
+
+title Hệ thống Mô phỏng Mua sắm Trực tuyến (EcoShop) - Class Diagram
+
+' ============================================
+' INTERFACES (Trừu tượng - Abstraction)
+' ============================================
+package "Interfaces (Trừu tượng)" {
+    interface Discountable {
+        + {abstract} calculateDiscount(totalAmount: double): double
+    }
+
+    interface JsonSerializable {
+        + toJson(): String
+    }
+}
+
+' ============================================
+' USER HIERARCHY (Kế thừa & Đa hình)
+' ============================================
+package "Quản lý Người dùng (User Hierarchy)" {
+    abstract class User implements JsonSerializable {
+        # userId: String
+        # username: String
+        # password: String
+        --
+        + User(userId: String, username: String, password: String)
+        + getUserId(): String
+        + getUsername(): String
+        + setUsername(username: String): void
+        + setPassword(password: String): void
+        + {abstract} getRole(): String
+        + login(inputPassword: String): boolean
+        + toString(): String
+    }
+
+    class Admin extends User {
+        - adminLevel: int
+        - permissions: List<String>
+        --
+        + Admin(userId: String, username: String, password: String, adminLevel: int)
+        + getRole(): String
+        + hasPermission(permission: String): boolean
+        + getAdminLevel(): int
+        + getPermissions(): List<String>
+        + toJson(): String
+        + toString(): String
+    }
+
+    abstract class Customer extends User implements Discountable {
+        # address: String
+        # phoneNumber: String
+        # cart: ShoppingCart
+        # orderHistory: List<Order>
+        --
+        + Customer(userId: String, username: String, password: String, address: String, phoneNumber: String)
+        + {abstract} calculateDiscount(totalAmount: double): double
+        + {abstract} getCustomerType(): String
+        + placeOrder(): Order
+        + getAddress(): String
+        + getPhoneNumber(): String
+        + getCart(): ShoppingCart
+        + getOrderHistory(): List<Order>
+    }
+
+    class RegularCustomer extends Customer {
+        - loyaltyPoints: int
+        --
+        + RegularCustomer(userId: String, username: String, password: String, address: String, phoneNumber: String)
+        + calculateDiscount(totalAmount: double): double
+        + getCustomerType(): String
+        + getRole(): String
+        + addLoyaltyPoints(points: int): void
+        + earnPointsFromPurchase(amount: double): void
+        + getLoyaltyPoints(): int
+        + toJson(): String
+        + toString(): String
+    }
+
+    class VIPCustomer extends Customer {
+        - vipLevel: int
+        - memberSince: LocalDate
+        --
+        + VIPCustomer(userId: String, username: String, password: String, address: String, phoneNumber: String, vipLevel: int)
+        + calculateDiscount(totalAmount: double): double
+        + getCustomerType(): String
+        + getRole(): String
+        + getVipLevel(): int
+        + setVipLevel(level: int): void
+        + getDiscountRate(): double
+        + getMemberSince(): LocalDate
+        + toJson(): String
+        + toString(): String
+    }
+}
+
+' ============================================
+' PRODUCT & CART (Đóng gói - Encapsulation)
+' ============================================
+package "Sản phẩm & Giỏ hàng (Product & Cart)" {
+    abstract class Product implements JsonSerializable {
+        # productId: String
+        # name: String
+        # description: String
+        # price: double
+        # stockQuantity: int
+        # category: String
+        --
+        + Product(productId, name, description, price, stockQuantity, category)
+        + isAvailable(): boolean
+        + reduceStock(quantity: int): void
+        + addStock(quantity: int): void
+        + {abstract} getProductType(): String
+        + {abstract} getEcoBadge(): String
+        + {abstract} getSpecificInfo(): String
+        + getProductId(): String
+        + getName(): String
+        + getPrice(): double
+        + getStockQuantity(): int
+        + getCategory(): String
+        + toJson(): String
+        + toString(): String
+    }
+
+    class ReusableProduct extends Product {
+        - material: String
+        - estimatedReuseCount: int
+        - ecoCertificate: String
+        --
+        + ReusableProduct(productId, name, description, price, stockQuantity, category, material, estimatedReuseCount, ecoCertificate)
+        + getProductType(): String
+        + getEcoBadge(): String
+        + getSpecificInfo(): String
+        + getMaterial(): String
+        + getEstimatedReuseCount(): int
+        + getEcoCertificate(): String
+        + toJson(): String
+        + toString(): String
+    }
+
+    class OrganicProduct extends Product {
+        - expiryDate: String
+        - organicCertification: String
+        - storageInstruction: String
+        --
+        + OrganicProduct(productId, name, description, price, stockQuantity, category, expiryDate, organicCertification, storageInstruction)
+        + getProductType(): String
+        + getEcoBadge(): String
+        + getSpecificInfo(): String
+        + getExpiryDate(): String
+        + getOrganicCertification(): String
+        + getStorageInstruction(): String
+        + toJson(): String
+        + toString(): String
+    }
+
+    class CartItem {
+        - product: Product
+        - quantity: int
+        --
+        + CartItem(product: Product, quantity: int)
+        + getSubtotal(): double
+        + getProduct(): Product
+        + getQuantity(): int
+        + setQuantity(quantity: int): void
+        + toString(): String
+    }
+
+    class ShoppingCart {
+        - items: List<CartItem>
+        --
+        + ShoppingCart()
+        + addItem(product: Product, quantity: int): void
+        + removeItem(productId: String): boolean
+        + updateQuantity(productId: String, newQty: int): boolean
+        + getTotalAmount(): double
+        + clear(): void
+        + isEmpty(): boolean
+        + getItems(): List<CartItem>
+        + printCart(): void
+    }
+}
+
+' ============================================
+' ORDER & PAYMENT
+' ============================================
+package "Đơn hàng & Thanh toán (Order & Payment)" {
+    enum OrderStatus {
+        PENDING
+        CONFIRMED
+        SHIPPED
+        DELIVERED
+        CANCELLED
+        --
+        - displayName: String
+        + getDisplayName(): String
+    }
+
+    class Order implements JsonSerializable {
+        - orderId: String
+        - customer: Customer
+        - items: List<CartItem>
+        - totalAmount: double
+        - discountAmount: double
+        - finalAmount: double
+        - orderDate: LocalDateTime
+        - status: OrderStatus
+        - paymentMethod: String
+        --
+        + Order(orderId: String, customer: Customer, items: List<CartItem>)
+        + calculateFinal(): void
+        + getOrderId(): String
+        + getCustomer(): Customer
+        + getFinalAmount(): double
+        + printReceipt(): void
+        + toJson(): String
+        + toString(): String
+    }
+
+    class PaymentProcessor {
+        - paymentMethod: String
+        --
+        + PaymentProcessor()
+        + processPayment(order: Order, method: String, scanner: Scanner): void
+        + generateReceipt(order: Order): String
+    }
+}
+
+' ============================================
+' DATA PERSISTENCE & APPLICATION
+' ============================================
+package "Dịch vụ & Ứng dụng (Service & App)" {
+    class JsonDataManager {
+        - usersFile: String
+        - productsFile: String
+        - ordersFile: String
+        --
+        + JsonDataManager(dataDirectory: String)
+        + saveUsers(users: List<User>): void
+        + loadUsers(): List<User>
+        + saveProducts(products: List<Product>): void
+        + loadProducts(): List<Product>
+        + saveOrders(orders: List<Order>): void
+    }
+
+    class EcoShopApp {
+        - dataManager: JsonDataManager
+        - paymentProcessor: PaymentProcessor
+        - scanner: Scanner
+        - users: List<User>
+        - products: List<Product>
+        - orders: List<Order>
+        - currentUser: User
+        --
+        + EcoShopApp()
+        + {static} main(args: String[]): void
+        + run(): void
+    }
+}
+
+' ============================================
+' RELATIONSHIPS
+' ============================================
+User <|-- Admin
+User <|-- Customer
+Customer <|-- RegularCustomer
+Customer <|-- VIPCustomer
+
+Customer "1" *-- "1" ShoppingCart : sở hữu
+Customer "1" o-- "*" Order : lịch sử
+ShoppingCart "1" *-- "*" CartItem : chứa
+CartItem "1" --> "1" Product : tham chiếu
+
+Order "1" --> "1" Customer : thuộc về
+Order "1" *-- "*" CartItem : gồm các món
+Order "1" --> "1" OrderStatus : trạng thái
+
+PaymentProcessor ..> Order : xử lý thanh toán
+EcoShopApp --> JsonDataManager : lưu trữ dữ liệu
+EcoShopApp --> PaymentProcessor : thanh toán
+EcoShopApp --> User : quản lý phiên
+EcoShopApp --> Product : quản lý kho
+
+@enduml
