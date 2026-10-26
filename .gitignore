@@ -1,0 +1,10 @@
+out/
+bin/
+*.class
+data/
+*.log
+sources.txt
+.DS_Store
+.vscode/
+.idea/
+*.iml
