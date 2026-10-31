@@ -37,7 +37,7 @@ public class PaymentProcessor {
     public void processPayment(Order order, String method, Scanner scanner)
             throws PaymentFailedException {
 
-        // Chặn đơn hàng null, rỗng hoặc đã thanh toán / đã hủy
+        // [Sửa lỗi 2]: Chặn đơn hàng null, rỗng hoặc đã thanh toán / đã hủy
         if (order == null || order.getItems() == null || order.getItems().isEmpty()) {
             throw new PaymentFailedException("Đơn hàng không hợp lệ hoặc đang trống.");
         }
@@ -64,7 +64,7 @@ public class PaymentProcessor {
                 throw new PaymentFailedException("Phương thức thanh toán không hỗ trợ: " + method);
         }
 
-        // Vòng lặp trừ tồn kho sản phẩm an toàn sau khi thanh toán thành công
+        // [Sửa lỗi 1]: Vòng lặp trừ tồn kho sản phẩm an toàn sau khi thanh toán thành công
         try {
             for (CartItem item : order.getItems()) {
                 item.getProduct().reduceStock(item.getQuantity());
