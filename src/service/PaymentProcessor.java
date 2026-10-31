@@ -69,7 +69,7 @@ public class PaymentProcessor {
             for (CartItem item : order.getItems()) {
                 item.getProduct().reduceStock(item.getQuantity());
             }
-        } catch (InsufficientStockException e) {
+        } catch (IllegalArgumentException e) {
             throw new PaymentFailedException(e.getMessage());
         }
 
