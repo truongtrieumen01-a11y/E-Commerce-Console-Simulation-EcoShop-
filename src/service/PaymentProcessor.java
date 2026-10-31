@@ -1,6 +1,5 @@
 package service;
 
-import exception.InsufficientStockException;
 import exception.PaymentFailedException;
 import model.CartItem;
 import model.Customer;
@@ -65,7 +64,7 @@ public class PaymentProcessor {
                 throw new PaymentFailedException("Phương thức thanh toán không hỗ trợ: " + method);
         }
 
-        // [Sửa lỗi 1]: Vòng lặp trừ tồn kho sản phẩm sau khi thanh toán thành công
+        // [Sửa lỗi 1]: Vòng lặp trừ tồn kho sản phẩm an toàn sau khi thanh toán thành công
         try {
             for (CartItem item : order.getItems()) {
                 item.getProduct().reduceStock(item.getQuantity());
