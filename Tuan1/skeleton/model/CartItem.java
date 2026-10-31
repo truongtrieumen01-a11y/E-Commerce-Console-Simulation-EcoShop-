@@ -8,35 +8,32 @@ package skeleton.model;
 public class CartItem {
 
     private Product product;
-    private int quantity;
+    private int     quantity;
 
+    // ------------------------------------------------------------------ constructors
     public CartItem(Product product, int quantity) {
-        this.product = product;
+        this.product  = product;
         this.quantity = quantity;
     }
 
+    // ------------------------------------------------------------------ business methods
     public double getSubtotal() {
-        // TODO: Tính thành tiền = đơn giá * số lượng
-        return 0.0;
+        return product.getPrice() * quantity;
     }
 
-    public Product getProduct() {
-        return product;
-    }
-
-    public int getQuantity() {
-        return quantity;
-    }
+    // ------------------------------------------------------------------ getters / setters
+    public Product getProduct()  { return product;  }
+    public int     getQuantity() { return quantity; }
 
     public void setQuantity(int quantity) {
-        // TODO: Kiểm tra số lượng > 0
-        this.quantity = quantity;
+        if (quantity > 0) this.quantity = quantity;
     }
 
+    // ------------------------------------------------------------------ display
     @Override
     public String toString() {
         return String.format("  │ %-30s │ SL: %2d │ Đơn giá: $%8.2f │ Thành tiền: $%9.2f │",
-            product != null ? product.getName() : "", quantity,
-            product != null ? product.getPrice() : 0.0, getSubtotal());
+            product.getName(), quantity, product.getPrice(), getSubtotal());
     }
 }
+

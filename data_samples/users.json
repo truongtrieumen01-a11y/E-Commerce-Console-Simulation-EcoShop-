@@ -1,0 +1,5 @@
+[
+  {"type":"Admin","userId":"A001","username":"admin","password":"admin123","adminLevel":1,"permissions":["MANAGE_PRODUCTS","VIEW_ORDERS","MANAGE_USERS","CHANGE_ORDER_STATUS"]},
+  {"type":"RegularCustomer","userId":"C001","username":"alice","password":"pass123","address":"123 Lê Lợi, Quận 1, TP.HCM","phoneNumber":"0901234567","loyaltyPoints":150},
+  {"type":"VIPCustomer","userId":"C002","username":"bob","password":"pass123","address":"456 Nguyễn Huệ, Quận 1, TP.HCM","phoneNumber":"0912345678","vipLevel":2,"memberSince":"2026-10-01"}
+]

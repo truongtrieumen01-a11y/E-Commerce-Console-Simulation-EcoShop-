@@ -1,207 +1,202 @@
-# Tuần 1: Khởi Tạo Dự Án & Thiết Kế Khung Kiến Trúc
-## 1. Mục Tiêu Trọng Tâm & Chức Năng Cốt Lõi Tuần 1
+# 🛒 EcoShop — Hệ Thống Quản Lý Bán Hàng & Mua Sắm Trực Tuyến Sinh Thái
 
-1. **Khảo sát & Phân tích Đề tài:**
-   - Xây dựng hệ thống mua sắm sản phẩm xanh **EcoShop** trên giao diện Console với phân cấp người dùng (`User` $\rightarrow$ `Admin`, `Customer` $\rightarrow$ `RegularCustomer`, `VIPCustomer`).
-   - Áp dụng cơ chế tính chiết khấu đa hình (`calculateDiscount()`), lưu trữ dữ liệu bền vững bằng tệp JSON (`data_samples/`) và bắt lỗi ngoại lệ không làm chương trình bị dừng đột ngột (crash).
-2. **Phân quyền Chức năng Chính:**
-   - **Khách hàng (`RegularCustomer` & `VIPCustomer`):** Đăng ký/Đăng nhập; duyệt và tìm kiếm sản phẩm; quản lý giỏ hàng (`ShoppingCart`, `CartItem`); đặt hàng và thanh toán (`Order`, `PaymentProcessor`) với mức chiết khấu tự động theo hạng thẻ/điểm tích lũy.
-   - **Quản trị viên (`Admin`):** Quản lý danh mục kho sản phẩm (`Thêm` / `Sửa` / `Xóa` / cập nhật tồn kho `Product`); kiểm duyệt trạng thái đơn hàng (`OrderStatus`) và thống kê doanh thu.
+> **Học phần:** Lập Trình Hướng Đối Tượng (OOP) — Học kỳ 1, Năm học 2026-2027  
+> **Giảng viên hướng dẫn:** ThS. Huỳnh Xuân Phụng  
+> **Khoa:** Công Nghệ Thông Tin  
+> **Công nghệ:** Java SE 11+, Kiến trúc hướng đối tượng thuần túy, Lưu trữ JSON không dùng thư viện ngoài.
 
-## 2. Ánh Xạ 4 Tính Chất OOP & Error Handling (Chuẩn `Tuan1/skeleton`)
+---
 
-| Tính chất / Kỹ thuật | Lớp / Giao diện áp dụng trong `skeleton/` | Mô tả thiết kế trong Tuần 1 |
+## 👥 Danh Sách Thành Viên & Phân Hệ Đảm Nhiệm
+
+| Thành viên (Họ & Tên) | GitHub Username | Phân hệ đảm nhiệm xuyên suốt đề tài |
 | :--- | :--- | :--- |
-| **1. Inheritance (Kế thừa)** | `User` $\rightarrow$ `Admin`, `Customer` $\rightarrow$ `RegularCustomer`, `VIPCustomer`; `EcoShopException` $\rightarrow$ 4 lớp ngoại lệ con | Tái sử dụng thuộc tính định danh người dùng ở lớp cha `User` và mở rộng thuộc tính riêng (điểm tích lũy cho `RegularCustomer`, cấp bậc VIP cho `VIPCustomer`). |
-| **2. Polymorphism (Đa hình)** | `RegularCustomer.calculateDiscount()`, `VIPCustomer.calculateDiscount()` | Cùng thực thi phương thức `calculateDiscount()` từ `Customer`/`Discountable` nhưng tính tỷ lệ giảm giá khác nhau tùy theo đối tượng thực tế lúc chạy chương trình. |
-| **3. Abstraction (Trừu tượng)** | Abstract class `User`, `Customer`; Interface `Discountable`, `JsonSerializable` | Ẩn chi tiết tính toán khuyến mãi và tuần tự hóa JSON đằng sau giao diện chung; tách biệt xử lý lưu trữ tại `JsonDataManager` và thanh toán tại `PaymentProcessor`. |
-| **4. Encapsulation (Đóng gói)** | Tất cả các lớp trong gói `model/` (`User`, `Product`, `ShoppingCart`, `Order`...) | Khai báo thuộc tính ở phạm vi `private` hoặc `protected`; kiểm soát truy cập và ràng buộc dữ liệu thông qua hệ thống Getter/Setter. |
-| **5. Error Handling (Xử lý lỗi)** | Gói `exception/` (`EcoShopException`, `InvalidInputException`, `InsufficientStockException`, `PaymentFailedException`, `ProductNotFoundException`) | Xây dựng cây ngoại lệ tùy chỉnh kết hợp khối `try-catch` tại `EcoShopApp` và `JsonDataManager` để chống crash khi nhập sai kiểu dữ liệu hoặc thiếu tồn kho. |
+| **Trương Triều Mến** *(Thành viên 1)* | [`truongtrieumen01-a11y`](https://github.com/truongtrieumen01-a11y) (`neMuierT`) | **Phân hệ Người dùng (`User`), Sản phẩm (`Product`), Quản trị viên (`Admin`) & Quản lý lưu trữ JSON (`JsonDataManager`)** |
+| **Lê Lợi Khang** *(Thành viên 2)* | [`Kainn7`](https://github.com/Kainn7) (`Kainn77`) | **Phân hệ Giỏ hàng (`ShoppingCart`), Đơn hàng (`Order`), Thanh toán (`PaymentProcessor`), Ngoại lệ (`exception/`) & Khách hàng** |
 
-## 3. Sơ Đồ Lớp UML (Đồng Bộ Theo `Tuan1/skeleton`)
+---
+
+## 📑 Báo Cáo Tiến Độ Các Tuần
+
+Hệ thống được phát triển theo từng giai đoạn tuần tự, có báo cáo và minh chứng đầy đủ:
+
+- 📘 [**Báo Cáo Tuần 1: Khởi Tạo Dự Án & Thiết Kế Khung Kiến Trúc Skeleton**](Tuan1/README.md)  
+  *Khảo sát đề tài, thiết kế khung lớp, phân tích JSON vs CSV, sơ đồ lớp UML và định vị bất biến.*
+- 📗 [**Báo Cáo Tuần 2: Hiện Thực Thân Hàm, Đa Hình Chiết Khấu & Đọc/Ghi JSON**](Tuan2/README.md)  
+  *Tách cây kế thừa sản phẩm xanh (`ReusableProduct` & `OrganicProduct`), đa hình `calculateDiscount()`, nghiệp vụ Admin.*
+- 📙 [**Báo Cáo Tuần 3: Xây Dựng EcoShopApp Điều Phối, Quản Lý Dữ Liệu JSON & Menu Admin**](Tuan3/README.md)  
+  *Hợp nhất nhánh về `src/`, cặp hàm nạp/lưu `initData()` & `saveAllData()`, xác thực `User.authenticate()`, menu Admin và log chạy thử thật.*
+
+---
+
+## 🚀 Hướng Dẫn Biên Dịch & Chạy Ứng Dụng (1-Click Run)
+
+Ứng dụng được viết bằng Java SE thuần (không yêu cầu cài đặt Maven hay Gradle).
+
+### Cách 1: Chạy nhanh bằng script tự động
+- **Trên Windows:** Bấm đúp vào tệp [`run.bat`](run.bat) hoặc mở terminal gõ:
+  ```cmd
+  run.bat
+  ```
+- **Trên Linux / macOS:** Mở terminal gõ:
+  ```bash
+  chmod +x run.sh
+  ./run.sh
+  ```
+
+### Cách 2: Biên dịch thủ công bằng lệnh `javac`
+```bash
+# 1. Biên dịch toàn bộ mã nguồn
+javac -encoding UTF-8 -d out src/exception/*.java src/model/*.java src/service/*.java src/app/*.java
+
+# 2. Khởi chạy ứng dụng với mã hóa UTF-8
+java -Dfile.encoding=UTF-8 -cp out app.EcoShopApp
+```
+
+---
+
+## 🔑 Tài Khoản Kiểm Thử Có Sẵn Trong Hệ Thống
+
+| Vai trò | Tên đăng nhập | Mật khẩu | Đặc điểm nổi bật |
+| :--- | :--- | :--- | :--- |
+| **Quản trị viên (Super Admin)** | `admin` | `admin123` | Toàn quyền xem kho, thêm/sửa/xóa sản phẩm, nhập hàng `addStock`, duyệt trạng thái đơn hàng và thống kê doanh thu. |
+| **Khách hàng Thường (Regular)** | `alice` | `pass123` | Tích lũy điểm thưởng khi mua sắm, tự động nhận chiết khấu theo mức điểm tích lũy. |
+| **Khách hàng VIP (VIP)** | `bob` | `pass123` | Khách VIP Vàng (Level 2), tự động nhận chiết khấu cố định 15% cho mọi hóa đơn. |
+
+---
+
+## 🛡️ 4 Trụ Cột Lập Trình Hướng Đối Tượng (OOP) Trong Đề Tài
 
 ```mermaid
 classDiagram
     direction TB
 
-    class Discountable {
-        <<interface>>
-        +calculateDiscount(double amount) double
-    }
-
-    class JsonSerializable {
-        <<interface>>
-        +toJson() String
-    }
-
     class User {
-        <<abstract>>         
-        #String id
+        <<abstract>>
+        #String userId
         #String username
         #String password
-        #String fullName
-        #String email
-        +getId() String
-        +getUsername() String
         +authenticate(String password) boolean
-        +displayRoleMenu()* void
+        +getRole()* String
     }
 
     class Admin {
-        -String department
-        +displayRoleMenu() void
+        -int adminLevel
+        -List~String~ permissions
+        +getRole() String
     }
 
     class Customer {
         <<abstract>>
-        #String phone
-        #String address
         #ShoppingCart cart
-        +getCart() ShoppingCart
+        #List~Order~ orderHistory
         +calculateDiscount(double amount)* double
-        +displayRoleMenu() void
+        +placeOrder() Order
     }
 
     class RegularCustomer {
         -int loyaltyPoints
-        +addLoyaltyPoints(int points) void
         +calculateDiscount(double amount) double
     }
 
     class VIPCustomer {
-        -String vipTier
-        -double discountRate
+        -int vipLevel
         +calculateDiscount(double amount) double
     }
 
     class Product {
-        -String productId
-        -String name
-        -String category
-        -double price
-        -int stockQuantity
+        <<abstract>>
+        #String productId
+        #double price
+        #int stockQuantity
         +reduceStock(int quantity) void
-        +toJson() String
+        +addStock(int quantity) void
+        +getProductType()* String
+        +getEcoBadge()* String
     }
 
-    class CartItem {
-        -Product product
-        -int quantity
-        +getSubTotal() double
+    class ReusableProduct {
+        -String material
+        -int estimatedReuseCount
+        +getProductType() String
+        +getEcoBadge() String
     }
 
-    class ShoppingCart {
-        -List~CartItem~ items
-        +addItem(Product product, int quantity) void
-        +removeItem(String productId) void
-        +calculateSubTotal() double
+    class OrganicProduct {
+        -String expiryDate
+        -String organicCertification
+        +getProductType() String
+        +getEcoBadge() String
     }
 
-    class Order {
-        -String orderId
-        -String customerId
-        -List~CartItem~ items
-        -double subTotal
-        -double discountAmount
-        -double finalTotal
-        -OrderStatus status
-        +toJson() String
-    }
-
-    class OrderStatus {
-        <<enumeration>>
-        PENDING
-        CONFIRMED
-        SHIPPING
-        COMPLETED
-        CANCELLED
-    }
-
-    class JsonDataManager {
-        +loadUsers(String filePath) List~User~
-        +saveUsers(String filePath, List~User~ users) void
-        +loadProducts(String filePath) List~Product~
-        +saveProducts(String filePath, List~Product~ products) void
-        +loadOrders(String filePath) List~Order~
-        +saveOrders(String filePath, List~Order~ orders) void
-    }
-
-    class PaymentProcessor {
-        +processPayment(Order order, String method) boolean
-    }
-
-    class EcoShopException {
-        +EcoShopException(String message)
-    }
-
-    JsonSerializable <|.. User
-    JsonSerializable <|.. Product
-    JsonSerializable <|.. Order
-    Discountable <|.. Customer
     User <|-- Admin
     User <|-- Customer
     Customer <|-- RegularCustomer
     Customer <|-- VIPCustomer
-    Customer *-- "1" ShoppingCart : owns
-    ShoppingCart *-- "0..*" CartItem : contains
-    CartItem --> "1" Product : references
-    Order *-- "1..*" CartItem : snapshots
-    Order --> OrderStatus : has
-    Order ..> PaymentProcessor : uses
+    Product <|-- ReusableProduct
+    Product <|-- OrganicProduct
 ```
 
-## 4. Cấu Trúc Thư Mục & Tệp Dữ Liệu Mẫu (`data_samples/`)
+1. **Đóng gói (Encapsulation):** Toàn bộ thuộc tính nghiệp vụ (`price`, `stockQuantity`, `password`, `cart`) đều ở phạm vi `private`/`protected`. Mọi thao tác xuất/nhập kho bắt buộc phải đi qua [`reduceStock(quantity)`](file:///d:/EcoShop/src/model/Product.java#L149-L160) và [`addStock(quantity)`](file:///d:/EcoShop/src/model/Product.java#L167-L171) để bảo vệ bất biến, ngăn ngừa tồn kho âm.
+2. **Kế thừa (Inheritance):** Tách cây phân cấp Người dùng (`User` $\rightarrow$ `Admin`, `Customer` $\rightarrow$ `RegularCustomer`, `VIPCustomer`) và Sản phẩm xanh (`Product` $\rightarrow$ `ReusableProduct`, `OrganicProduct`), tái sử dụng tối đa mã nguồn chung.
+3. **Đa hình (Polymorphism):**
+   - Đa hình chiết khấu: Gọi `customer.calculateDiscount(amount)` tự động áp dụng công thức theo điểm tích lũy hoặc cấp bậc VIP mà không cần dùng `if-else / instanceof`.
+   - Đa hình hiển thị: Gọi `product.getEcoBadge()` tự sinh huy hiệu sinh thái tương ứng cho từng dòng sản phẩm.
+   - Đa hình lưu trữ: Giao diện `JsonSerializable` cho phép mỗi đối tượng tự sinh chuỗi JSON qua phương thức `toJson()`.
+4. **Trừu tượng (Abstraction):** `User`, `Customer`, `Product` là các `abstract class`; `Discountable`, `JsonSerializable` là các interface định nghĩa hợp đồng nghiệp vụ rõ ràng, che giấu chi tiết cài đặt bên trong.
+
+---
+
+## 📁 Cấu Trúc Thư Mục Dự Án Chuẩn Mực
 
 ```text
-Tuan1/
-├── README.md                          <-- Tài liệu tổng quan Tuần 1 (Tệp này)
-├── PHAN_TICH_DU_LIEU_JSON_CSV.md      <-- Khảo sát & Đánh giá so sánh cấu trúc JSON vs CSV
-├── KE_HOACH_TUAN_1.md                 <-- Kế hoạch công việc & Tiêu chí nghiệm thu
+EcoShop/
+├── .gitignore                          <-- Cấu hình bỏ qua tệp build và runtime JSON
+├── readme.md                           <-- Trang chủ dự án (Tệp này)
+├── run.bat                             <-- Kịch bản biên dịch & chạy trên Windows
+├── run.sh                              <-- Kịch bản biên dịch & chạy trên Linux/macOS
 │
-├── data_samples/                      <-- Dữ liệu mẫu JSON chuẩn phục vụ kiểm thử & thiết kế parser
-│   ├── users.json                     <-- Mẫu người dùng đa hình (Admin, RegularCustomer, VIPCustomer)
-│   ├── products.json                  <-- Mẫu danh mục kho sản phẩm xanh
-│   └── orders.json                    <-- Mẫu đơn hàng lồng ghép (Nested Order & Items)
+├── data_samples/                       <-- Dữ liệu mẫu JSON chuẩn được theo dõi trong Git
+│   ├── users.json                      <-- Tài khoản mẫu (Admin, Regular, VIP)
+│   ├── products.json                   <-- Danh mục sản phẩm xanh mẫu
+│   └── orders.json                     <-- Lịch sử đơn hàng mẫu
 │
-└── skeleton/                          <-- Khung mã nguồn tổng quan chuẩn OOP (Chưa code thân hàm)
-    ├── app/
-    │   └── EcoShopApp.java            <-- Skeleton ứng dụng điều khiển Console chính
-    ├── exception/
-    │   ├── EcoShopException.java      <-- Lớp ngoại lệ cơ sở (Base Exception)
+├── docs/                               <-- Tài liệu phân tích chuyên sâu
+│   ├── ARCHITECTURE.md                 <-- Kiến trúc phân tầng của hệ thống
+│   ├── OOP_ANALYSIS.md                 <-- Phân tích chi tiết 4 tính chất OOP
+│   ├── DATABASE_SCHEMA.md              <-- Sơ đồ cấu trúc JSON & bảng bất biến
+│   ├── USER_GUIDE.md                   <-- Hướng dẫn thao tác cho người dùng
+│   └── diagrams/                       <-- Sơ đồ kiến trúc & PlantUML
+│       └── ecoshop_class_diagram.puml  <-- Sơ đồ lớp UML tổng thể
+│
+├── Tuan1/                              <-- Tài liệu & skeleton Tuần 1
+│   ├── README.md                       <-- Báo cáo Tuần 1
+│   └── skeleton/                       <-- Khung mã nguồn khởi tạo
+│
+├── Tuan2/                              <-- Tài liệu & kết quả Tuần 2
+│   └── README.md                       <-- Báo cáo Tuần 2
+│
+├── Tuan3/                              <-- Tài liệu & kết quả Tuần 3
+│   └── README.md                       <-- Báo cáo Tuần 3 (kèm log chạy thử thật)
+│
+└── src/                                <-- Mã nguồn hoàn chỉnh của ứng dụng
+    ├── app/                            <-- Tầng điều khiển chính
+    │   └── EcoShopApp.java             <-- Controller trung tâm hệ thống
+    ├── exception/                      <-- Tầng xử lý ngoại lệ tùy chỉnh
+    │   ├── EcoShopException.java       <-- Ngoại lệ cơ sở (Base Exception)
     │   ├── InsufficientStockException.java
     │   ├── InvalidInputException.java
     │   ├── PaymentFailedException.java
     │   └── ProductNotFoundException.java
-    ├── model/
-    │   ├── Discountable.java          <-- Giao diện tính chiết khấu
-    │   ├── JsonSerializable.java      <-- Giao diện tuần tự hóa JSON
-    │   ├── User.java                  <-- Lớp trừu tượng Người dùng
-    │   ├── Admin.java                 <-- Skeleton Quản trị viên
-    │   ├── Customer.java              <-- Lớp trừu tượng Khách hàng
-    │   ├── RegularCustomer.java       <-- Skeleton Khách hàng thường (Điểm tích lũy)
-    │   ├── VIPCustomer.java           <-- Skeleton Khách hàng VIP (Cấp bậc)
-    │   ├── Product.java               <-- Skeleton Sản phẩm
-    │   ├── CartItem.java              <-- Skeleton Mục giỏ hàng
-    │   ├── ShoppingCart.java          <-- Skeleton Giỏ hàng
-    │   ├── Order.java                 <-- Skeleton Đơn hàng
-    │   └── OrderStatus.java           <-- Enum Trạng thái đơn hàng
-    └── service/
-        ├── JsonDataManager.java       <-- Skeleton xử lý lưu trữ tệp JSON thuần Java SE
-        └── PaymentProcessor.java      <-- Skeleton xử lý thanh toán đa phương thức
+    ├── model/                          <-- Tầng thực thể nghiệp vụ (OOP Domain Model)
+    │   ├── Discountable.java
+    │   ├── JsonSerializable.java
+    │   ├── User.java & Admin.java
+    │   ├── Customer.java, RegularCustomer.java, VIPCustomer.java
+    │   ├── Product.java, ReusableProduct.java, OrganicProduct.java
+    │   ├── CartItem.java & ShoppingCart.java
+    │   ├── Order.java & OrderStatus.java
+    └── service/                        <-- Tầng dịch vụ lưu trữ & thanh toán
+        ├── JsonDataManager.java        <-- Quản lý tệp JSON (initData, saveAllData)
+        └── PaymentProcessor.java       <-- Xử lý thanh toán đa kênh
 ```
-
-
-## 5. Đánh Giá Hạn Chế & Những Điều Chưa Kịp Thực Hiện Ở Tuần 1
-Hạn chế: 
-
-    Nhánh kế thừa Sản phẩm (`Product`)** | Lớp `Product.java` trong `skeleton/model/` hiện mới dừng ở một lớp đơn lẻ (concrete class), chưa tách thành cây kế thừa (`ReusableProduct` - tái sử dụng & `OrganicProduct` - hữu cơ có hạn sử dụng). | Cân nhắc chuyển `Product` thành `abstract class` và bổ sung 2 lớp con ở Tuần 2 để thể hiện tính Đa hình rõ nét hơn ở cả nhánh `User` và `Product`. |
-    Đọc/Ghi JSON thuần Java SE (`JsonDataManager`)** | Tự viết bộ phân tích chuỗi (parser) JSON thuần Java SE không dùng thư viện ngoài (`Gson`/`Jackson`) dễ phát sinh lỗi khi chuỗi tên sản phẩm chứa dấu ngoặc kép hoặc khi đọc mảng lồng nhau (`Order` chứa `List<CartItem>`). | Chuẩn hóa quy tắc định dạng chuỗi JSON trong `JsonSerializable.toJson()` hoặc tích hợp thư viện `Gson` nếu giảng viên cho phép. |
-    Xử lý Đa hình Thanh toán (`PaymentProcessor`)** | `PaymentProcessor.java` hiện đang gộp chung các phương thức thanh toán vào một lớp dịch vụ thay vì tách thành các lớp thực thi giao diện riêng biệt (`CODPayment`, `EWalletPayment`). | Áp dụng Strategy Pattern cho nhánh thanh toán để mở rộng phương thức mới mà không cần sửa đổi code cũ. |
-    Dữ liệu mẫu & Bảo mật (`data_samples/`)** | Mật khẩu trong `users.json` đang lưu dạng văn bản thuần (plain text); dữ liệu mẫu mới chỉ bao phủ trường hợp hợp lệ (happy path), thiếu các bản ghi kiểm thử lỗi biên. | Bổ sung các bản ghi sản phẩm tồn kho bằng `0`, giá trị biên và chuỗi lỗi định dạng để kiểm thử toàn bộ 5 lớp trong gói `exception/`. |
-
-Những điều chưa kịp thực hiện:
-
-    Chưa viết thân hàm thực thi (Method Body) cho các lớp trong `app/`, `model/`, `service/` và `exception/` hiện mới hoàn thiện khai báo thuộc tính, constructor, và ghi chú `// TODO`, chưa có logic xử lý thực tế.
-    Chưa hiện thực công thức tính chiết khấu đa hình (`calculateDiscount`): Hai lớp `RegularCustomer` và `VIPCustomer` mới có khung phương thức ghi đè.
-    Chưa hoàn thiện thuật toán đọc/ghi file trong `JsonDataManager.java`: Chưa viết xong code đọc dữ liệu từ các file .json lên các danh sách `List<User>`, `List<Product>`, `List<Order>`.
-    Chưa ghép nối luồng nghiệp vụ Đặt hàng & Trừ tồn kho (`ShoppingCart` $\rightarrow$ `Order): Chưa thực hiện luồng chuyển danh sách `CartItem` từ giỏ hàng sang hóa đơn `Order`, kiểm tra `InsufficientStockException`, trừ `stockQuantity` của `Product` và lưu cập nhật xuống tệp JSON.
