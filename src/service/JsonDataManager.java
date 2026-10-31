@@ -484,4 +484,23 @@ public class JsonDataManager {
             return defaultVal;
         }
     }
+
+    // ========================================================================
+    // PHẦN 7: ĐỒNG BỘ TOÀN BỘ TẦNG LƯU TRỮ (Full Persistence Sync)
+    // ========================================================================
+
+    /**
+     * Đồng bộ hóa và ghi toàn bộ dữ liệu 3 phân hệ (User, Product, Order) xuống các tệp JSON tương ứng.
+     * [YÊU CẦU TUẦN 3]: Đảm bảo việc nạp và lưu dữ liệu được thực hiện nhất quán, giữ nguyên tầng lưu trữ JSON
+     * như GVHD đã lưu ý: "Khi merge 2 nhánh em nhớ giữ nguyên tầng lưu trữ JSON, đó là chỗ dễ vỡ nhất lúc hợp nhất."
+     *
+     * @param users    Danh sách người dùng hiện tại
+     * @param products Danh mục sản phẩm kho
+     * @param orders   Danh sách lịch sử đơn đặt hàng
+     */
+    public void saveAllData(List<User> users, List<Product> products, List<Order> orders) {
+        saveUsers(users);
+        saveProducts(products);
+        saveOrders(orders);
+    }
 }

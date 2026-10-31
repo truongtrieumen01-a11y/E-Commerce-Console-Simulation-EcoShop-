@@ -113,7 +113,18 @@ public abstract class User implements JsonSerializable {
      */
     public boolean login(String inputPassword) {
         // equals() so sánh nội dung chuỗi (không phải địa chỉ bộ nhớ như ==)
-        return this.password.equals(inputPassword);
+        return this.password != null && this.password.equals(inputPassword);
+    }
+
+    /**
+     * Xác thực thông tin người dùng qua phương thức User.authenticate(password).
+     * [YÊU CẦU TUẦN 3]: Chuẩn hóa hàm xác thực đăng nhập phục vụ luồng điều phối của EcoShopApp.
+     * 
+     * @param password Mật khẩu người dùng nhập vào từ bàn phím
+     * @return true nếu mật khẩu khớp hoàn toàn, ngược lại trả về false
+     */
+    public boolean authenticate(String password) {
+        return login(password);
     }
 
     // ============================================================
