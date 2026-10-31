@@ -367,7 +367,20 @@ public class JsonDataManager {
     private String readFile(String filePath) {
         try {
             Path path = Paths.get(filePath);
-            if (!Files.exists(path)) return null;
+            if (!Files.exists(path)) {
+                // [TỰ ĐỘNG KHÔI PHỤC]: Nếu tệp runtime trong data/ chưa có (khi mới clone repo),
+                // tự động nạp và khởi tạo từ thư mục mẫu data_samples/ để không lỗi dữ liệu.
+                Path samplePath = Paths.get("data_samples", path.getFileName().toString());
+                if (Files.exists(samplePath)) {
+                    byte[] bytes = Files.readAllBytes(samplePath);
+                    try {
+                        Files.createDirectories(path.getParent());
+                        Files.write(path, bytes);
+                    } catch (Exception ignored) {}
+                    return new String(bytes, StandardCharsets.UTF_8);
+                }
+                return null;
+            }
             return new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
         } catch (IOException e) {
             System.err.println("[LỖI I/O] Không thể đọc tệp " + filePath + ": " + e.getMessage());

@@ -1,10 +1,22 @@
+# ==============================================================================
+# ECOSHOP — GIT IGNORE CONFIGURATION
+# ==============================================================================
+
+# Build & Compilation outputs
 out/
 bin/
 *.class
-data/
-*.log
 sources.txt
+
+# Runtime persistence data (Local database state)
+data/
+
+# Logs & Temporary files
+*.log
 .DS_Store
+Thumbs.db
+
+# IDE and Editor configs
 .vscode/
 .idea/
 *.iml
