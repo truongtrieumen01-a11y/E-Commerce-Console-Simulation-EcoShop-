@@ -38,6 +38,23 @@ public class Order implements JsonSerializable {
         this.paymentMethod = "CASH";
     }
 
+    /**
+     * Constructor phục hồi đơn hàng đầy đủ từ tầng lưu trữ JSON (JsonDataManager).
+     */
+    public Order(String orderId, Customer customer, List<CartItem> items,
+                 double totalAmount, double discountAmount, double finalAmount,
+                 LocalDateTime orderDate, OrderStatus status, String paymentMethod) {
+        this.orderId        = orderId;
+        this.customer       = customer;
+        this.items          = new ArrayList<>(items);
+        this.totalAmount    = totalAmount;
+        this.discountAmount = discountAmount;
+        this.finalAmount    = finalAmount;
+        this.orderDate      = (orderDate != null) ? orderDate : LocalDateTime.now();
+        this.status         = (status != null) ? status : OrderStatus.CONFIRMED;
+        this.paymentMethod  = (paymentMethod != null && !paymentMethod.isEmpty()) ? paymentMethod : "CASH";
+    }
+
     // ------------------------------------------------------------------ business methods
     /**
      * Calculates final amount applying the customer's polymorphic discount.

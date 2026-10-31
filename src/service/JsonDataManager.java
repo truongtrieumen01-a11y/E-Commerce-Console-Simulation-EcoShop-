@@ -362,6 +362,15 @@ public class JsonDataManager {
         } catch (IOException e) {
             System.err.println("[LỖI I/O] Không thể ghi tệp " + filePath + ": " + e.getMessage());
         }
+
+        // Đồng bộ hóa với data_samples/ nếu có để đáp ứng tiêu chí nghiệm thu Tuần 3
+        try {
+            Path path = Paths.get(filePath);
+            Path samplePath = Paths.get("data_samples", path.getFileName().toString());
+            if (Files.exists(Paths.get("data_samples")) && !path.toAbsolutePath().equals(samplePath.toAbsolutePath())) {
+                Files.writeString(samplePath, content, StandardCharsets.UTF_8);
+            }
+        } catch (Exception ignored) {}
     }
 
     private String readFile(String filePath) {

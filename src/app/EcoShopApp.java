@@ -37,7 +37,7 @@ public class EcoShopApp {
         this.paymentProcessor = new PaymentProcessor();
         this.scanner          = new Scanner(System.in, StandardCharsets.UTF_8);
         this.orders           = new ArrayList<>();
-        loadData();
+        initData();
     }
 
     // ================================================================== ENTRY POINT
@@ -74,7 +74,7 @@ public class EcoShopApp {
                 currentUser = null;
             }
         }
-        saveData();
+        saveAllData();
         System.out.println("\n  ==========================================================");
         System.out.println("     Cảm ơn bạn đã mua sắm tại EcoShop! Hẹn gặp lại! 👋");
         System.out.println("  ==========================================================");
@@ -113,24 +113,26 @@ public class EcoShopApp {
         System.out.printf("  │  👤 MENU QUẢN TRỊ VIÊN — Xin chào: %-19s │%n", admin.getUsername());
         System.out.println("  ├────────────────────────────────────────────────────────┤");
         System.out.println("  │  1. Xem toàn bộ sản phẩm                               │");
-        System.out.println("  │  2. Thêm sản phẩm mới                                  │");
-        System.out.println("  │  3. Chỉnh sửa thông tin sản phẩm                       │");
+        System.out.println("  │  2. Thêm sản phẩm xanh đa hình                         │");
+        System.out.println("  │  3. Chỉnh sửa thông tin sản phẩm & Nhập kho (addStock) │");
         System.out.println("  │  4. Xóa sản phẩm                                       │");
         System.out.println("  │  5. Xem danh sách đơn hàng                             │");
         System.out.println("  │  6. Xem danh sách người dùng                           │");
         System.out.println("  │  7. Cập nhật trạng thái đơn hàng                       │");
+        System.out.println("  │  8. Xem thống kê tổng doanh thu bán lẻ                 │");
         System.out.println("  │  0. Đăng xuất                                          │");
         System.out.println("  └────────────────────────────────────────────────────────┘");
 
-        int choice = readInt("  >> Chọn chức năng (0-7): ", 0, 7);
+        int choice = readInt("  >> Chọn chức năng (0-8): ", 0, 8);
         switch (choice) {
-            case 1: browseProducts(null);     break;
-            case 2: adminAddProduct();        break;
-            case 3: adminEditProduct();       break;
-            case 4: adminRemoveProduct();     break;
-            case 5: adminViewOrders();        break;
-            case 6: adminViewUsers();         break;
-            case 7: adminChangeOrderStatus(); break;
+            case 1: browseProducts(null);         break;
+            case 2: adminAddProduct();            break;
+            case 3: adminEditProduct();           break;
+            case 4: adminRemoveProduct();         break;
+            case 5: adminViewOrders();            break;
+            case 6: adminViewUsers();             break;
+            case 7: adminChangeOrderStatus();     break;
+            case 8: adminViewRevenueStatistics(); break;
             case 0:
                 System.out.println("  [✓] Đã đăng xuất thành công.");
                 currentUser = null;
@@ -189,7 +191,7 @@ public class EcoShopApp {
         }
 
         for (User user : users) {
-            if (user.getUsername().equalsIgnoreCase(username) && user.login(password)) {
+            if (user.getUsername().equalsIgnoreCase(username) && user.authenticate(password)) {
                 currentUser = user;
                 System.out.printf("%n  [✓] Đăng nhập thành công! Xin chào, %s (%s)%n",
                     user.getUsername(), user.getRole());
@@ -274,17 +276,18 @@ public class EcoShopApp {
             // Hiển thị tất cả
         }
 
-        System.out.println("\n  ┌────────┬────────────────────────────────┬────────────┬──────────┬──────────────────┐");
-        System.out.printf("  │ %-6s │ %-30s │ %-10s │ %-8s │ %-16s │%n",
-            "Mã SP", "Tên sản phẩm", "Giá bán", "Tồn kho", "Danh mục");
-        System.out.println("  ├────────┼────────────────────────────────┼────────────┼──────────┼──────────────────┤");
+        System.out.println("\n  ┌────────┬────────────────────────────────┬────────────┬──────────┬──────────────────┬────────────────────────────────────────────────────────┐");
+        System.out.printf("  │ %-6s │ %-30s │ %-10s │ %-8s │ %-16s │ %-54s │%n",
+            "Mã SP", "Tên sản phẩm", "Giá bán", "Tồn kho", "Danh mục", "Đặc tính sinh thái / Nhãn xanh đa hình (Eco Badge)");
+        System.out.println("  ├────────┼────────────────────────────────┼────────────┼──────────┼──────────────────┼────────────────────────────────────────────────────────┤");
         int count = 0;
         for (Product p : products) {
             if (filterCat != null && !p.getCategory().equals(filterCat)) continue;
-            System.out.println(p);
+            System.out.printf("  │ %-6s │ %-30s │ $%9.2f │ %8d │ %-16s │ %-54s │%n",
+                p.getProductId(), p.getName(), p.getPrice(), p.getStockQuantity(), p.getCategory(), p.getEcoBadge());
             count++;
         }
-        System.out.println("  └────────┴────────────────────────────────┴────────────┴──────────┴──────────────────┘");
+        System.out.println("  └────────┴────────────────────────────────┴────────────┴──────────┴──────────────────┴────────────────────────────────────────────────────────┘");
         System.out.printf("  Đang hiển thị: %d sản phẩm%n", count);
 
         if (viewer != null) {
@@ -449,9 +452,15 @@ public class EcoShopApp {
 
     // ================================================================== ADMIN OPERATIONS
     private void adminAddProduct() {
-        printSectionHeader("THÊM SẢN PHẨM MỚI");
+        printSectionHeader("THÊM SẢN PHẨM MỚI (SẢN PHẨM XANH ĐA HÌNH)");
         try {
+            System.out.println("  Chọn loại sản phẩm sinh thái cần thêm:");
+            System.out.println("    1. Sản phẩm Tái sử dụng (ReusableProduct)");
+            System.out.println("    2. Sản phẩm Hữu cơ (OrganicProduct)");
+            int typeChoice = readInt("  >> Lựa chọn của bạn (1-2): ", 1, 2);
+
             String productId = "P" + String.format("%03d", products.size() + 1);
+            System.out.printf("  Mã sản phẩm tự động: %s%n", productId);
             System.out.print("  Tên sản phẩm: ");
             String name = scanner.nextLine().trim();
             if (name.isEmpty()) throw new InvalidInputException("Tên sản phẩm không được để trống.");
@@ -460,16 +469,39 @@ public class EcoShopApp {
             String desc = scanner.nextLine().trim();
 
             double price = readDouble("  Giá bán ($): ", 0.01, 99999.99);
-            int    stock = readInt("  Số lượng tồn kho: ", 0, 99999);
+            int    stock = readInt("  Số lượng tồn kho ban đầu: ", 0, 99999);
 
             System.out.print("  Danh mục sản phẩm: ");
             String category = scanner.nextLine().trim();
             if (category.isEmpty()) category = "Chung";
 
-            Product p = new Product(productId, name, desc, price, stock, category);
-            products.add(p);
-            saveData();
-            System.out.printf("  [✓] Đã thêm sản phẩm '%s' thành công với mã: %s%n", name, productId);
+            Product newProd;
+            if (typeChoice == 1) {
+                System.out.print("  Chất liệu thân thiện môi trường: ");
+                String material = scanner.nextLine().trim();
+                if (material.isEmpty()) material = "Vật liệu tái chế";
+                int reuseCount = readInt("  Số lần tái sử dụng ước tính: ", 1, 100000);
+                System.out.print("  Chứng chỉ sinh thái / Tiêu chuẩn xanh: ");
+                String cert = scanner.nextLine().trim();
+                if (cert.isEmpty()) cert = "Eco-Standard";
+                newProd = new ReusableProduct(productId, name, desc, price, stock, category, material, reuseCount, cert);
+            } else {
+                System.out.print("  Hạn sử dụng (YYYY-MM-DD): ");
+                String expiry = scanner.nextLine().trim();
+                if (expiry.isEmpty()) expiry = "2027-12-31";
+                System.out.print("  Chứng nhận hữu cơ (USDA/EU/VietGAP...): ");
+                String orgCert = scanner.nextLine().trim();
+                if (orgCert.isEmpty()) orgCert = "Chuẩn Hữu Cơ";
+                System.out.print("  Hướng dẫn bảo quản: ");
+                String storage = scanner.nextLine().trim();
+                if (storage.isEmpty()) storage = "Nhiệt độ phòng";
+                newProd = new OrganicProduct(productId, name, desc, price, stock, category, expiry, orgCert, storage);
+            }
+
+            products.add(newProd);
+            saveAllData();
+            System.out.printf("  [✓] Đã thêm thành công %s: '%s' (Mã: %s)%n",
+                newProd.getProductType(), name, productId);
 
         } catch (InvalidInputException e) {
             System.out.println("  [!] LỖI NHẬP LIỆU: " + e.getMessage());
@@ -477,7 +509,7 @@ public class EcoShopApp {
     }
 
     private void adminEditProduct() {
-        printSectionHeader("CHỈNH SỬA SẢN PHẨM");
+        printSectionHeader("CHỈNH SỬA SẢN PHẨM & QUẢN LÝ KHO HÀNG");
         browseProducts(null);
         System.out.print("\n  >> Nhập Mã SP cần sửa: ");
         String productId = scanner.nextLine().trim().toUpperCase();
@@ -487,25 +519,37 @@ public class EcoShopApp {
             return;
         }
 
-        System.out.println("  Đang chọn sửa: " + p.getName() + " (" + p.getProductId() + ")");
+        System.out.println("  Đang chọn sửa: " + p.getName() + " (" + p.getProductId() + ") - Phân loại: " + p.getProductType());
         System.out.println("  Bạn muốn thay đổi thông tin nào?");
-        System.out.println("    1. Giá bán   2. Tồn kho   3. Tên sản phẩm   4. Mô tả   0. Hủy");
-        int choice = readInt("  >> Lựa chọn (0-4): ", 0, 4);
+        System.out.println("    1. Cập nhật giá bán");
+        System.out.println("    2. Nhập thêm hàng vào kho (addStock)");
+        System.out.println("    3. Điều chỉnh lại số lượng tồn kho");
+        System.out.println("    4. Cập nhật tên sản phẩm");
+        System.out.println("    5. Cập nhật mô tả sản phẩm");
+        System.out.println("    0. Hủy");
+        int choice = readInt("  >> Lựa chọn (0-5): ", 0, 5);
 
         switch (choice) {
             case 1: {
                 double newPrice = readDouble("  Nhập giá mới ($): ", 0.01, 99999.99);
                 p.setPrice(newPrice);
-                System.out.println("  [✓] Đã cập nhật giá bán.");
+                System.out.println("  [✓] Đã cập nhật giá bán thành công.");
                 break;
             }
             case 2: {
-                int newStock = readInt("  Nhập số lượng tồn kho mới: ", 0, 99999);
-                p.setStockQuantity(newStock);
-                System.out.println("  [✓] Đã cập nhật số lượng tồn kho.");
+                int addQty = readInt("  Nhập số lượng hàng cần nhập thêm vào kho: ", 1, 99999);
+                p.addStock(addQty);
+                System.out.printf("  [✓] Đã nhập thêm %d sản phẩm vào kho qua addStock(). Tồn kho hiện tại: %d%n",
+                    addQty, p.getStockQuantity());
                 break;
             }
             case 3: {
+                int newStock = readInt("  Nhập số lượng tồn kho mới: ", 0, 99999);
+                p.setStockQuantity(newStock);
+                System.out.printf("  [✓] Đã điều chỉnh số lượng tồn kho thành: %d%n", newStock);
+                break;
+            }
+            case 4: {
                 System.out.print("  Nhập tên sản phẩm mới: ");
                 String newName = scanner.nextLine().trim();
                 if (!newName.isEmpty()) {
@@ -514,7 +558,7 @@ public class EcoShopApp {
                 }
                 break;
             }
-            case 4: {
+            case 5: {
                 System.out.print("  Nhập mô tả mới: ");
                 String newDesc = scanner.nextLine().trim();
                 p.setDescription(newDesc);
@@ -524,7 +568,7 @@ public class EcoShopApp {
             case 0:
                 return;
         }
-        saveData();
+        saveAllData();
     }
 
     private void adminRemoveProduct() {
@@ -534,7 +578,7 @@ public class EcoShopApp {
         String productId = scanner.nextLine().trim().toUpperCase();
         boolean removed = products.removeIf(p -> p.getProductId().equalsIgnoreCase(productId));
         if (removed) {
-            saveData();
+            saveAllData();
             System.out.println("  [✓] Đã xóa sản phẩm thành công.");
         } else {
             System.out.println("  [!] Không tìm thấy sản phẩm có mã: " + productId);
@@ -544,7 +588,7 @@ public class EcoShopApp {
     private void adminViewOrders() {
         printSectionHeader("DANH SÁCH TẤT CẢ ĐƠN HÀNG");
         if (orders.isEmpty()) {
-            System.out.println("  [!] Chưa có đơn hàng nào trong phiên làm việc này.");
+            System.out.println("  [!] Chưa có đơn hàng nào trong hệ thống.");
             return;
         }
         System.out.println("  -----------------------------------------------------------------------------------------");
@@ -587,22 +631,99 @@ public class EcoShopApp {
         int choice = readInt("  >> Lựa chọn: ", 1, statuses.length);
         target.setStatus(statuses[choice - 1]);
         System.out.printf("  [✓] Đã chuyển trạng thái đơn hàng %s thành: %s%n", orderId, statuses[choice - 1]);
-        saveData();
+        saveAllData();
     }
 
-    // ================================================================== DATA HELPERS
-    private void loadData() {
+    /**
+     * Báo cáo thống kê tổng doanh thu bán lẻ hệ thống (Yêu cầu phân hệ Quản trị viên Tuần 3).
+     */
+    private void adminViewRevenueStatistics() {
+        printSectionHeader("THỐNG KÊ TỔNG DOANH THU BÁN LẺ");
+        if (orders.isEmpty()) {
+            System.out.println("  [!] Chưa có đơn hàng nào trong hệ thống để thống kê.");
+            return;
+        }
+
+        int totalOrders = orders.size();
+        int confirmedCount = 0;
+        int deliveredCount = 0;
+        int shippedCount = 0;
+        int pendingCount = 0;
+        int cancelledCount = 0;
+
+        double totalGrossRevenue = 0.0;
+        double totalDiscountGiven = 0.0;
+        double totalNetRevenue = 0.0;
+
+        Map<String, Double> revenueByPayment = new HashMap<>();
+
+        for (Order o : orders) {
+            totalGrossRevenue += o.getTotalAmount();
+            totalDiscountGiven += o.getDiscountAmount();
+            totalNetRevenue += o.getFinalAmount();
+
+            OrderStatus s = o.getStatus();
+            if (s == OrderStatus.DELIVERED) deliveredCount++;
+            else if (s == OrderStatus.SHIPPED) shippedCount++;
+            else if (s == OrderStatus.CONFIRMED) confirmedCount++;
+            else if (s == OrderStatus.PENDING) pendingCount++;
+            else if (s == OrderStatus.CANCELLED) cancelledCount++;
+
+            String payMethod = o.getPaymentMethod();
+            revenueByPayment.put(payMethod, revenueByPayment.getOrDefault(payMethod, 0.0) + o.getFinalAmount());
+        }
+
+        System.out.println("  ┌────────────────────────────────────────────────────────┐");
+        System.out.println("  │               BÁO CÁO DOANH THU HỆ THỐNG               │");
+        System.out.println("  ├────────────────────────────────────────────────────────┤");
+        System.out.printf("  │  Tổng số đơn hàng đã đặt     : %-23d │%n", totalOrders);
+        System.out.printf("  │   • Đã giao thành công       : %-23d │%n", deliveredCount);
+        System.out.printf("  │   • Đang giao hàng           : %-23d │%n", shippedCount);
+        System.out.printf("  │   • Đã xác nhận thanh toán   : %-23d │%n", confirmedCount);
+        System.out.printf("  │   • Đang chờ xử lý           : %-23d │%n", pendingCount);
+        System.out.printf("  │   • Đã hủy                   : %-23d │%n", cancelledCount);
+        System.out.println("  ├────────────────────────────────────────────────────────┤");
+        System.out.printf("  │  Tổng giá trị đơn hàng (Gross): $%-22.2f │%n", totalGrossRevenue);
+        System.out.printf("  │  Tổng tiền chiết khấu ưu đãi : -$%-21.2f │%n", totalDiscountGiven);
+        System.out.printf("  │  DOANH THU THỰC NHẬN (Net)   : $%-22.2f │%n", totalNetRevenue);
+        System.out.println("  ├────────────────────────────────────────────────────────┤");
+        System.out.println("  │  Doanh thu theo phương thức thanh toán:                │");
+        for (Map.Entry<String, Double> entry : revenueByPayment.entrySet()) {
+            String methodDesc = entry.getKey().equals("CASH") ? "Tiền mặt (CASH)" :
+                                entry.getKey().equals("CARD") ? "Thẻ ngân hàng (CARD)" :
+                                entry.getKey().equals("EWALLET") ? "Ví điện tử (E-WALLET)" : entry.getKey();
+            System.out.printf("  │   • %-24s : $%-22.2f │%n", methodDesc, entry.getValue());
+        }
+        System.out.println("  └────────────────────────────────────────────────────────┘");
+    }
+
+    // ================================================================== DATA PERSISTENCE (Tuần 3)
+    /**
+     * Tự động nạp toàn bộ danh sách User, Product, Order từ các tệp JSON khi ứng dụng khởi chạy.
+     * [YÊU CẦU TUẦN 3]: Tầng dữ liệu JSON bền vững, nạp và khôi phục liên kết đối tượng hoàn chỉnh.
+     */
+    public void initData() {
         users    = dataManager.loadUsers();
         products = dataManager.loadProducts();
+        orders   = dataManager.loadOrders(users, products);
 
         if (users.isEmpty())    seedDefaultUsers();
         if (products.isEmpty()) seedDefaultProducts();
+        System.out.printf("  [i] Khởi tạo dữ liệu JSON thành công (%d người dùng, %d sản phẩm, %d đơn hàng).%n",
+            users.size(), products.size(), orders.size());
     }
 
+    /**
+     * Tự động lưu cập nhật xuống tệp JSON sau mỗi giao dịch mua hàng hoặc thay đổi kho.
+     * [YÊU CẦU TUẦN 3]: Đồng bộ hóa dữ liệu bền vững.
+     */
+    public void saveAllData() {
+        dataManager.saveAllData(users, products, orders);
+    }
+
+    /** Tương thích ngược nội bộ cho các lời gọi saveData() */
     private void saveData() {
-        dataManager.saveUsers(users);
-        dataManager.saveProducts(products);
-        dataManager.saveOrders(orders);
+        saveAllData();
     }
 
     /** Tạo tài khoản mặc định nếu chưa có dữ liệu */
@@ -615,25 +736,33 @@ public class EcoShopApp {
         System.out.println("  [i] Đã khởi tạo tài khoản mẫu (admin/admin123, alice/pass123, bob/pass123)");
     }
 
-    /** Tạo sản phẩm mẫu nếu chưa có dữ liệu */
+    /** Tạo sản phẩm sinh thái mẫu nếu chưa có dữ liệu (Đa hình ReusableProduct & OrganicProduct) */
     private void seedDefaultProducts() {
-        products.add(new Product("P001", "Laptop Dell XPS 15",
-            "Laptop hiệu năng cao màn hình 15.6 inch", 1299.99, 10, "Điện tử"));
-        products.add(new Product("P002", "Điện thoại iPhone 16 Pro",
-            "Smartphone Apple cao cấp chip A18", 999.00, 15, "Điện tử"));
-        products.add(new Product("P003", "Tai nghe Sony WH-1000XM5",
-            "Tai nghe chống ồn không dây cao cấp", 349.99, 20, "Điện tử"));
-        products.add(new Product("P004", "Giày Nike Air Max 270",
-            "Giày chạy bộ thể thao êm ái", 129.99, 30, "Giày dép"));
-        products.add(new Product("P005", "Quần Jeans Levi's 501",
-            "Quần jeans dáng đứng cổ điển", 79.99, 25, "Thời trang"));
-        products.add(new Product("P006", "Sách Nhà Giả Kim",
-            "Tiểu thuyết bán chạy của Paulo Coelho", 14.99, 50, "Sách"));
-        products.add(new Product("P007", "Nồi áp suất Instant Pot",
-            "Nồi áp suất điện đa năng 7 trong 1", 89.99, 12, "Gia dụng"));
-        products.add(new Product("P008", "Thảm tập Yoga Cao Cấp",
-            "Thảm yoga chống trượt dày 6mm", 39.99, 35, "Thể thao"));
-        System.out.println("  [i] Đã nạp danh sách sản phẩm mẫu.");
+        products.add(new ReusableProduct("P001", "Bình giữ nhiệt Inox 304 Eco",
+            "Bình giữ nhiệt chân không 500ml giữ nóng 12h lạnh 24h nắp tre mộc", 18.50, 40, "Gia dụng xanh",
+            "Inox 304 & Nắp tre", 2500, "BPA-Free & FDA"));
+        products.add(new ReusableProduct("P002", "Túi vải Canvas hữu cơ EcoBag",
+            "Túi tote vải bố 100% sợi bông organic thay thế túi nilon khi đi chợ", 6.50, 60, "Thời trang xanh",
+            "Vải Canvas hữu cơ", 1000, "GOTS Certified"));
+        products.add(new ReusableProduct("P003", "Hộp cơm thủy tinh chịu nhiệt",
+            "Hộp bảo quản thực phẩm 1000ml thủy tinh cao cấp nắp khóa gioăng silicone", 12.00, 30, "Gia dụng xanh",
+            "Thủy tinh Borosilicate", 1500, "LFGB Germany"));
+        products.add(new ReusableProduct("P004", "Bộ ống hút tre tự nhiên (10 cái)",
+            "Ống hút làm từ thân tre mộc tự nhiên có kèm cọ rửa sơ dừa", 4.50, 80, "Đồ dùng tái chế",
+            "Tre tự nhiên 100%", 500, "FSC 100%"));
+        products.add(new OrganicProduct("P005", "Trà hoa cúc sấy lạnh hữu cơ",
+            "Trà hoa cúc hữu cơ thanh mát không hóa chất đóng hộp thiếc 100g", 9.90, 50, "Thực phẩm sinh thái",
+            "2027-10-20", "USDA Organic", "Khô mát, tránh ánh nắng"));
+        products.add(new OrganicProduct("P006", "Hạt Macca sấy nứt vỏ hữu cơ",
+            "Hạt macca giàu dinh dưỡng từ nông trại sinh thái Tây Nguyên 500g", 14.50, 45, "Thực phẩm sinh thái",
+            "2027-08-15", "VietGAP Organic", "Ngăn mát tủ lạnh"));
+        products.add(new OrganicProduct("P007", "Xà bông sinh học tinh dầu tràm",
+            "Bánh xà phòng tắm thảo mộc tự nhiên tự phân hủy sinh học 120g", 3.80, 25, "Chăm sóc cá nhân",
+            "2028-01-01", "ECOCERT Organic", "Nơi khô ráo"));
+        products.add(new OrganicProduct("P008", "Dầu gội bồ kết thảo dược mộc",
+            "Dầu gội truyền thống nấu từ bồ kết cô đặc và vỏ bưởi mần trầu 300ml", 8.20, 45, "Chăm sóc cá nhân",
+            "2027-05-30", "Cruelty-Free & Bio", "Nhiệt độ phòng"));
+        System.out.println("  [i] Đã nạp danh sách sản phẩm sinh thái mẫu (Đa hình ReusableProduct & OrganicProduct).");
     }
 
     private User findUserByUsername(String username) {
