@@ -3,6 +3,10 @@ setlocal enabledelayedexpansion
 cd /d "%~dp0"
 chcp 65001 > nul
 
+SET "JAVA_HOME=C:\Users\Lenovo\.vscode\extensions\redhat.java-1.58.0-win32-x64\jre\25.0.4.1-win32-x86_64"
+SET "JAVAC=%JAVA_HOME%\bin\javac.exe"
+SET "JAVA=%JAVA_HOME%\bin\java.exe"
+
 echo ==========================================================
 echo               ECOSHOP - KHOI CHAY UNG DUNG
 echo ==========================================================
@@ -22,7 +26,7 @@ if not exist "bin" mkdir bin
 rem 3. Quet tat ca file nguon Java de bien dich
 echo [*] Dang quet ma nguon va bien dich...
 dir /s /b src\*.java > sources.txt
-javac -encoding UTF-8 -d bin @sources.txt
+"%JAVAC%" -encoding UTF-8 -d bin @sources.txt
 set COMPILE_ERR=%ERRORLEVEL%
 if exist sources.txt del sources.txt
 
@@ -34,5 +38,5 @@ if %COMPILE_ERR% NEQ 0 (
 
 echo [OK] Bien dich thanh cong! Dang khoi dong EcoShop...
 echo ==========================================================
-java -cp bin app.EcoShopApp
+"%JAVA%" -cp bin app.EcoShopApp
 pause
