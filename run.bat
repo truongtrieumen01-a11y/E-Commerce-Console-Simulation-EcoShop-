@@ -1,17 +1,38 @@
 @echo off
+setlocal enabledelayedexpansion
+cd /d "%~dp0"
 chcp 65001 > nul
+
 echo ==========================================================
-echo               ECOSHOP — KHỞI CHẠY ỨNG DỤNG
+echo               ECOSHOP - KHOI CHAY UNG DUNG
 echo ==========================================================
-if not exist "bin" mkdir bin
-echo [*] Đang biên dịch mã nguồn Java...
-javac -encoding UTF-8 -d bin src\app\*.java src\model\*.java src\service\*.java src\exception\*.java
+
+rem 1. Kiem tra JDK
+where javac >nul 2>nul
 if %ERRORLEVEL% NEQ 0 (
-    echo [x] Biên dịch thất bại! Vui lòng kiểm tra lại mã nguồn.
+    echo [LOI] Khong tim thay trinh bien dich javac!
+    echo Vui long kiem tra lai bien moi truong PATH hoac cai dat JDK 21+.
     pause
-    exit /b %ERRORLEVEL%
+    exit /b 1
 )
-echo [✓] Biên dịch thành công! Đang khởi động EcoShop...
+
+rem 2. Tao thu muc bin neu chua co
+if not exist "bin" mkdir bin
+
+rem 3. Quet tat ca file nguon Java de bien dich
+echo [*] Dang quet ma nguon va bien dich...
+dir /s /b src\*.java > sources.txt
+javac -encoding UTF-8 -d bin @sources.txt
+set COMPILE_ERR=%ERRORLEVEL%
+if exist sources.txt del sources.txt
+
+if %COMPILE_ERR% NEQ 0 (
+    echo [x] Bien dich that bai! Vui long kiem tra lai ma nguon.
+    pause
+    exit /b %COMPILE_ERR%
+)
+
+echo [OK] Bien dich thanh cong! Dang khoi dong EcoShop...
+echo ==========================================================
 java -cp bin app.EcoShopApp
 pause
-
