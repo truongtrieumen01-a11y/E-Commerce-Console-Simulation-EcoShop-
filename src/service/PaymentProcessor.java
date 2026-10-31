@@ -1,6 +1,7 @@
 package service;
 
 import exception.PaymentFailedException;
+import model.CartItem;
 import model.Customer;
 import model.Order;
 import model.OrderStatus;
@@ -36,6 +37,14 @@ public class PaymentProcessor {
     public void processPayment(Order order, String method, Scanner scanner)
             throws PaymentFailedException {
 
+        // Chặn đơn hàng null, rỗng hoặc đã thanh toán / đã hủy
+        if (order == null || order.getItems() == null || order.getItems().isEmpty()) {
+            throw new PaymentFailedException("Đơn hàng không hợp lệ hoặc đang trống.");
+        }
+        if (order.getStatus() == OrderStatus.CANCELLED || order.getStatus() == OrderStatus.CONFIRMED) {
+            throw new PaymentFailedException("Đơn hàng đã bị hủy hoặc đã thanh toán trước đó.");
+        }
+
         validateAmount(order.getFinalAmount());
 
         this.paymentMethod = method.toUpperCase().trim();
@@ -55,6 +64,15 @@ public class PaymentProcessor {
                 throw new PaymentFailedException("Phương thức thanh toán không hỗ trợ: " + method);
         }
 
+        // Vòng lặp trừ tồn kho sản phẩm an toàn sau khi thanh toán thành công
+        try {
+            for (CartItem item : order.getItems()) {
+                item.getProduct().reduceStock(item.getQuantity());
+            }
+        } catch (IllegalArgumentException e) {
+            throw new PaymentFailedException(e.getMessage());
+        }
+
         order.setStatus(OrderStatus.CONFIRMED);
 
         // Award loyalty points for Regular customers after successful payment
@@ -72,7 +90,7 @@ public class PaymentProcessor {
 
     private void processCash(Order order, Scanner scanner) {
         System.out.println("\n  ┌──────────────────────────────────────────────┐");
-        System.out.println("  │       THANH TOÁN BẰNG TIỀN MẶT (CASH)        │");
+        System.out.println("  │        THANH TOÁN BẰNG TIỀN MẶT (CASH)        │");
         System.out.println("  └──────────────────────────────────────────────┘");
         System.out.printf("  Số tiền cần trả: $%.2f%n", order.getFinalAmount());
         double tendered = 0;
@@ -93,7 +111,7 @@ public class PaymentProcessor {
 
     private void processCard(Order order, Scanner scanner) throws PaymentFailedException {
         System.out.println("\n  ┌──────────────────────────────────────────────┐");
-        System.out.println("  │     THANH TOÁN QUA THẺ NGÂN HÀNG (CARD)      │");
+        System.out.println("  │      THANH TOÁN QUA THẺ NGÂN HÀNG (CARD)      │");
         System.out.println("  └──────────────────────────────────────────────┘");
         System.out.print("  Nhập số thẻ (16 chữ số): ");
         String cardNum = scanner.nextLine().trim().replaceAll("\\s+", "");
@@ -112,7 +130,7 @@ public class PaymentProcessor {
 
     private void processEwallet(Order order, Scanner scanner) throws PaymentFailedException {
         System.out.println("\n  ┌──────────────────────────────────────────────┐");
-        System.out.println("  │     THANH TOÁN VÍ ĐIỆN TỬ (E-WALLET)         │");
+        System.out.println("  │      THANH TOÁN VÍ ĐIỆN TỬ (E-WALLET)         │");
         System.out.println("  └──────────────────────────────────────────────┘");
         System.out.print("  Nhập số điện thoại liên kết ví: ");
         String phone = scanner.nextLine().trim();
