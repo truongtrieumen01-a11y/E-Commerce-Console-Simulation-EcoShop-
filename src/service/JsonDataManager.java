@@ -207,6 +207,16 @@ public class JsonDataManager {
                     String storage       = extractString(obj, "storageInstruction");
                     products.add(new OrganicProduct(productId, name, desc, price, stock, category,
                         expiryDate, organicCert, storage));
+                } else if (type.equalsIgnoreCase("RecycledProduct") || obj.contains("\"recycledPercentage\"")) {
+                    // Nhánh sản phẩm Tái chế (Tuần 4 - Mở rộng OCP)
+                    String recycledMaterial   = extractString(obj, "recycledMaterial");
+                    if (recycledMaterial.isEmpty()) recycledMaterial = "Nhựa tái chế rPET";
+                    int    recycledPercentage = extractInt(obj, "recycledPercentage", 100);
+                    String recycleStandard    = extractString(obj, "recycleStandard");
+                    if (recycleStandard.isEmpty()) recycleStandard = "GRS Certified";
+
+                    products.add(new RecycledProduct(productId, name, desc, price, stock, category,
+                        recycledMaterial, recycledPercentage, recycleStandard));
                 } else {
                     // Nhánh sản phẩm Tái sử dụng (mặc định cho sản phẩm EcoShop)
                     String material      = extractString(obj, "material");

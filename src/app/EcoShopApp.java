@@ -276,18 +276,18 @@ public class EcoShopApp {
             // Hiển thị tất cả
         }
 
-        System.out.println("\n  ┌────────┬────────────────────────────────┬────────────┬──────────┬──────────────────┬────────────────────────────────────────────────────────┐");
-        System.out.printf("  │ %-6s │ %-30s │ %-10s │ %-8s │ %-16s │ %-54s │%n",
+        System.out.println("\n  ┌────────┬────────────────────────────────────┬────────────┬──────────┬──────────────────────┬──────────────────────────────────────────────────────────────────────────────────────────────────┐");
+        System.out.printf("  │ %-6s │ %-34s │ %-10s │ %-8s │ %-20s │ %-96s │%n",
             "Mã SP", "Tên sản phẩm", "Giá bán", "Tồn kho", "Danh mục", "Đặc tính sinh thái / Nhãn xanh đa hình (Eco Badge)");
-        System.out.println("  ├────────┼────────────────────────────────┼────────────┼──────────┼──────────────────┼────────────────────────────────────────────────────────┤");
+        System.out.println("  ├────────┼────────────────────────────────────┼────────────┼──────────┼──────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────┤");
         int count = 0;
         for (Product p : products) {
             if (filterCat != null && !p.getCategory().equals(filterCat)) continue;
-            System.out.printf("  │ %-6s │ %-30s │ $%9.2f │ %8d │ %-16s │ %-54s │%n",
+            System.out.printf("  │ %-6s │ %-34s │ $%9.2f │ %8d │ %-20s │ %-96s │%n",
                 p.getProductId(), p.getName(), p.getPrice(), p.getStockQuantity(), p.getCategory(), p.getEcoBadge());
             count++;
         }
-        System.out.println("  └────────┴────────────────────────────────┴────────────┴──────────┴──────────────────┴────────────────────────────────────────────────────────┘");
+        System.out.println("  └────────┴────────────────────────────────────┴────────────┴──────────┴──────────────────────┴──────────────────────────────────────────────────────────────────────────────────────────────────┘");
         System.out.printf("  Đang hiển thị: %d sản phẩm%n", count);
 
         if (viewer != null) {
@@ -414,9 +414,12 @@ public class EcoShopApp {
             System.out.println("  [!] Bạn chưa có đơn hàng nào.");
             return;
         }
-        System.out.println("  -----------------------------------------------------------------------------------------");
+        System.out.println("  -----------------------------------------------------------------------------------------------------------------");
+        System.out.printf("  %-20s %-22s | Khách: %-12s | %-23s | %s%n",
+            "[Trạng thái]", "Mã đơn hàng", "Tên khách", "Tổng tiền -> Thực trả", "Thời gian đặt");
+        System.out.println("  -----------------------------------------------------------------------------------------------------------------");
         for (Order o : history) System.out.println("  " + o);
-        System.out.println("  -----------------------------------------------------------------------------------------");
+        System.out.println("  -----------------------------------------------------------------------------------------------------------------");
     }
 
     private void viewProfile(Customer customer) {
@@ -457,7 +460,8 @@ public class EcoShopApp {
             System.out.println("  Chọn loại sản phẩm sinh thái cần thêm:");
             System.out.println("    1. Sản phẩm Tái sử dụng (ReusableProduct)");
             System.out.println("    2. Sản phẩm Hữu cơ (OrganicProduct)");
-            int typeChoice = readInt("  >> Lựa chọn của bạn (1-2): ", 1, 2);
+            System.out.println("    3. Sản phẩm Tái chế (RecycledProduct) — [Mở rộng Tuần 4 OCP]");
+            int typeChoice = readInt("  >> Lựa chọn của bạn (1-3): ", 1, 3);
 
             String productId = "P" + String.format("%03d", products.size() + 1);
             System.out.printf("  Mã sản phẩm tự động: %s%n", productId);
@@ -485,7 +489,7 @@ public class EcoShopApp {
                 String cert = scanner.nextLine().trim();
                 if (cert.isEmpty()) cert = "Eco-Standard";
                 newProd = new ReusableProduct(productId, name, desc, price, stock, category, material, reuseCount, cert);
-            } else {
+            } else if (typeChoice == 2) {
                 System.out.print("  Hạn sử dụng (YYYY-MM-DD): ");
                 String expiry = scanner.nextLine().trim();
                 if (expiry.isEmpty()) expiry = "2027-12-31";
@@ -496,6 +500,15 @@ public class EcoShopApp {
                 String storage = scanner.nextLine().trim();
                 if (storage.isEmpty()) storage = "Nhiệt độ phòng";
                 newProd = new OrganicProduct(productId, name, desc, price, stock, category, expiry, orgCert, storage);
+            } else {
+                System.out.print("  Vật liệu rác thải tái chế (VD: Nhựa đại dương rPET): ");
+                String recMat = scanner.nextLine().trim();
+                if (recMat.isEmpty()) recMat = "Nhựa đại dương rPET";
+                int recPct = readInt("  Tỷ lệ thành phần tái chế (1-100%): ", 1, 100);
+                System.out.print("  Tiêu chuẩn tái chế quốc tế (VD: GRS / RCS): ");
+                String recStd = scanner.nextLine().trim();
+                if (recStd.isEmpty()) recStd = "GRS Certified";
+                newProd = new RecycledProduct(productId, name, desc, price, stock, category, recMat, recPct, recStd);
             }
 
             products.add(newProd);
@@ -591,9 +604,12 @@ public class EcoShopApp {
             System.out.println("  [!] Chưa có đơn hàng nào trong hệ thống.");
             return;
         }
-        System.out.println("  -----------------------------------------------------------------------------------------");
+        System.out.println("  -----------------------------------------------------------------------------------------------------------------");
+        System.out.printf("  %-20s %-22s | Khách: %-12s | %-23s | %s%n",
+            "[Trạng thái]", "Mã đơn hàng", "Tên khách", "Tổng tiền -> Thực trả", "Thời gian đặt");
+        System.out.println("  -----------------------------------------------------------------------------------------------------------------");
         for (Order o : orders) System.out.println("  " + o);
-        System.out.println("  -----------------------------------------------------------------------------------------");
+        System.out.println("  -----------------------------------------------------------------------------------------------------------------");
         System.out.printf("  Tổng số đơn hàng: %d%n", orders.size());
     }
 

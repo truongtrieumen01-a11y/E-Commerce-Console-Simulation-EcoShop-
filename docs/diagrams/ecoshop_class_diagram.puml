@@ -1,29 +1,30 @@
-@startuml EcoShop_Class_Diagram
+@startuml EcoShop_Final_Class_Diagram
 
 skinparam classAttributeIconSize 0
-skinparam classFontSize 13
-skinparam packageFontSize 15
+skinparam classFontSize 12
+skinparam packageFontSize 14
 skinparam shadowing false
 skinparam roundcorner 8
 
-title Hệ thống Mô phỏng Mua sắm Trực tuyến (EcoShop) - Class Diagram
+title SƠ ĐỒ LỚP TỔNG THỂ HỆ THỐNG ECOSHOP (FINAL UML - TUẦN 4)
+footer Nhóm EcoShop | Thành viên 1: truongtrieumen01-a11y | Thành viên 2: Kainn7
 
-' ============================================
+' ============================================================
 ' INTERFACES (Trừu tượng - Abstraction)
-' ============================================
+' ============================================================
 package "Interfaces (Trừu tượng)" {
     interface Discountable {
         + {abstract} calculateDiscount(totalAmount: double): double
     }
 
     interface JsonSerializable {
-        + toJson(): String
+        + {abstract} toJson(): String
     }
 }
 
-' ============================================
+' ============================================================
 ' USER HIERARCHY (Kế thừa & Đa hình)
-' ============================================
+' ============================================================
 package "Quản lý Người dùng (User Hierarchy)" {
     abstract class User implements JsonSerializable {
         # userId: String
@@ -63,6 +64,7 @@ package "Quản lý Người dùng (User Hierarchy)" {
         + {abstract} calculateDiscount(totalAmount: double): double
         + {abstract} getCustomerType(): String
         + placeOrder(): Order
+        + addOrderToHistory(order: Order): void
         + getAddress(): String
         + getPhoneNumber(): String
         + getCart(): ShoppingCart
@@ -100,19 +102,22 @@ package "Quản lý Người dùng (User Hierarchy)" {
     }
 }
 
-' ============================================
-' PRODUCT & CART (Đóng gói - Encapsulation)
-' ============================================
-package "Sản phẩm & Giỏ hàng (Product & Cart)" {
-    class Product implements JsonSerializable {
-        - productId: String
-        - name: String
-        - description: String
-        - price: double
-        - stockQuantity: int
-        - category: String
+' ============================================================
+' PRODUCT HIERARCHY (Kế thừa, Đa hình & Mở rộng OCP)
+' ============================================================
+package "Quản lý Sản phẩm Sinh thái (Product Hierarchy)" {
+    abstract class Product implements JsonSerializable {
+        # productId: String
+        # name: String
+        # description: String
+        # price: double
+        # stockQuantity: int
+        # category: String
         --
-        + Product(productId, name, description, price, stockQuantity, category)
+        + Product(productId: String, name: String, description: String, price: double, stockQuantity: int, category: String)
+        + {abstract} getProductType(): String
+        + {abstract} getEcoBadge(): String
+        + {abstract} getSpecificInfo(): String
         + isAvailable(): boolean
         + reduceStock(quantity: int): void
         + addStock(quantity: int): void
@@ -121,10 +126,66 @@ package "Sản phẩm & Giỏ hàng (Product & Cart)" {
         + getPrice(): double
         + getStockQuantity(): int
         + getCategory(): String
+        + setPrice(price: double): void
+        + setStockQuantity(quantity: int): void
+        + toString(): String
+    }
+
+    class ReusableProduct extends Product {
+        - material: String
+        - estimatedReuseCount: int
+        - ecoCertificate: String
+        --
+        + ReusableProduct(productId: String, name: String, description: String, price: double, stockQuantity: int, category: String, material: String, estimatedReuseCount: int, ecoCertificate: String)
+        + getProductType(): String
+        + getEcoBadge(): String
+        + getSpecificInfo(): String
+        + getMaterial(): String
+        + getEstimatedReuseCount(): int
+        + getEcoCertificate(): String
         + toJson(): String
         + toString(): String
     }
 
+    class OrganicProduct extends Product {
+        - expiryDate: String
+        - organicCertification: String
+        - storageInstruction: String
+        --
+        + OrganicProduct(productId: String, name: String, description: String, price: double, stockQuantity: int, category: String, expiryDate: String, organicCertification: String, storageInstruction: String)
+        + getProductType(): String
+        + getEcoBadge(): String
+        + getSpecificInfo(): String
+        + getExpiryDate(): String
+        + getOrganicCertification(): String
+        + getStorageInstruction(): String
+        + toJson(): String
+        + toString(): String
+    }
+
+    class RecycledProduct extends Product {
+        note top: "**[MỞ RỘNG TUẦN 4 - NGUYÊN LÝ OCP]**\nKế thừa Product mà không sửa đổi các lớp cũ"
+        - recycledMaterial: String
+        - recycledPercentage: int
+        - recycleStandard: String
+        --
+        + RecycledProduct(productId: String, name: String, description: String, price: double, stockQuantity: int, category: String, recycledMaterial: String, recycledPercentage: int, recycleStandard: String)
+        + getProductType(): String
+        + getEcoBadge(): String
+        + getSpecificInfo(): String
+        + getRecycledMaterial(): String
+        + getRecycledPercentage(): int
+        + getRecycleStandard(): String
+        + setRecycledPercentage(recycledPercentage: int): void
+        + toJson(): String
+        + toString(): String
+    }
+}
+
+' ============================================================
+' CART & ORDER (Đóng gói & Hợp thành)
+' ============================================================
+package "Giỏ hàng & Đơn hàng (Cart & Order)" {
     class CartItem {
         - product: Product
         - quantity: int
@@ -150,12 +211,7 @@ package "Sản phẩm & Giỏ hàng (Product & Cart)" {
         + getItems(): List<CartItem>
         + printCart(): void
     }
-}
 
-' ============================================
-' ORDER & PAYMENT
-' ============================================
-package "Đơn hàng & Thanh toán (Order & Payment)" {
     enum OrderStatus {
         PENDING
         CONFIRMED
@@ -165,6 +221,7 @@ package "Đơn hàng & Thanh toán (Order & Payment)" {
         --
         - displayName: String
         + getDisplayName(): String
+        + toString(): String
     }
 
     class Order implements JsonSerializable {
@@ -179,11 +236,18 @@ package "Đơn hàng & Thanh toán (Order & Payment)" {
         - paymentMethod: String
         --
         + Order(orderId: String, customer: Customer, items: List<CartItem>)
+        + Order(orderId: String, customer: Customer, items: List<CartItem>, total: double, discount: double, finalAmt: double, date: LocalDateTime, status: OrderStatus, method: String)
         + calculateFinal(): void
         + getOrderId(): String
         + getCustomer(): Customer
+        + getItems(): List<CartItem>
+        + getTotalAmount(): double
+        + getDiscountAmount(): double
         + getFinalAmount(): double
-        + printReceipt(): void
+        + getStatus(): OrderStatus
+        + setStatus(status: OrderStatus): void
+        + getPaymentMethod(): String
+        + setPaymentMethod(method: String): void
         + toJson(): String
         + toString(): String
     }
@@ -197,10 +261,10 @@ package "Đơn hàng & Thanh toán (Order & Payment)" {
     }
 }
 
-' ============================================
-' DATA PERSISTENCE & APPLICATION
-' ============================================
-package "Dịch vụ & Ứng dụng (Service & App)" {
+' ============================================================
+' SERVICE & APP
+' ============================================================
+package "Dịch vụ & Điều khiển (Service & App)" {
     class JsonDataManager {
         - usersFile: String
         - productsFile: String
@@ -212,6 +276,7 @@ package "Dịch vụ & Ứng dụng (Service & App)" {
         + saveProducts(products: List<Product>): void
         + loadProducts(): List<Product>
         + saveOrders(orders: List<Order>): void
+        + loadOrders(users: List<User>, products: List<Product>): List<Order>
     }
 
     class EcoShopApp {
@@ -229,16 +294,51 @@ package "Dịch vụ & Ứng dụng (Service & App)" {
     }
 }
 
-' ============================================
-' RELATIONSHIPS
-' ============================================
+' ============================================================
+' EXCEPTIONS
+' ============================================================
+package "Hệ thống Ngoại lệ (Exceptions)" {
+    class EcoShopException extends Exception {
+        - errorCode: String
+        --
+        + EcoShopException(message: String, errorCode: String)
+        + getErrorCode(): String
+    }
+
+    class InsufficientStockException extends EcoShopException {
+        - availableStock: int
+        --
+        + InsufficientStockException(requested: int, available: int)
+        + getAvailableStock(): int
+    }
+
+    class ProductNotFoundException extends EcoShopException {
+        + ProductNotFoundException(productId: String)
+    }
+
+    class PaymentFailedException extends EcoShopException {
+        + PaymentFailedException(reason: String)
+    }
+
+    class InvalidInputException extends EcoShopException {
+        + InvalidInputException(field: String)
+    }
+}
+
+' ============================================================
+' RELATIONSHIPS (Quan hệ OOP)
+' ============================================================
 User <|-- Admin
 User <|-- Customer
 Customer <|-- RegularCustomer
 Customer <|-- VIPCustomer
 
+Product <|-- ReusableProduct
+Product <|-- OrganicProduct
+Product <|-- RecycledProduct : "<<mở rộng OCP>>"
+
 Customer "1" *-- "1" ShoppingCart : sở hữu
-Customer "1" o-- "*" Order : lịch sử
+Customer "1" o-- "*" Order : lịch sử mua
 ShoppingCart "1" *-- "*" CartItem : chứa
 CartItem "1" --> "1" Product : tham chiếu
 
@@ -246,10 +346,13 @@ Order "1" --> "1" Customer : thuộc về
 Order "1" *-- "*" CartItem : gồm các món
 Order "1" --> "1" OrderStatus : trạng thái
 
-PaymentProcessor ..> Order : xử lý thanh toán
+PaymentProcessor ..> Order : xử lý thanh toán & trừ kho
 EcoShopApp --> JsonDataManager : lưu trữ dữ liệu
-EcoShopApp --> PaymentProcessor : thanh toán
+EcoShopApp --> PaymentProcessor : điều khiển thanh toán
 EcoShopApp --> User : quản lý phiên
 EcoShopApp --> Product : quản lý kho
+
+ShoppingCart ..> InsufficientStockException : ném ngoại lệ
+PaymentProcessor ..> PaymentFailedException : ném ngoại lệ
 
 @enduml
