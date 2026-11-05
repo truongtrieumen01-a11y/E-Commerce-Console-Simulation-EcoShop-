@@ -31,7 +31,7 @@ public class CartItem {
     // ------------------------------------------------------------------ display
     @Override
     public String toString() {
-        return String.format("  │ %-30s │ SL: %2d │ Đơn giá: $%8.2f │ Thành tiền: $%9.2f │",
+        return String.format("  │ %-34s │ SL: %2d │ Đơn giá: $%8.2f │ Thành tiền: $%9.2f │",
             product.getName(), quantity, product.getPrice(), getSubtotal());
     }
 }

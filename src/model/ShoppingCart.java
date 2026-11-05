@@ -101,11 +101,11 @@ public class ShoppingCart {
             System.out.println("  [!] Giỏ hàng của bạn đang trống.");
             return;
         }
-        System.out.println("  ┌────────────────────────────────┬────────┬────────────────────┬────────────────────────┐");
+        System.out.println("  ┌────────────────────────────────────┬────────┬────────────────────┬────────────────────────┐");
         for (CartItem item : items) {
             System.out.println(item);
         }
-        System.out.println("  └────────────────────────────────┴────────┴────────────────────┴────────────────────────┘");
+        System.out.println("  └────────────────────────────────────┴────────┴────────────────────┴────────────────────────┘");
         System.out.printf("  >> TỔNG TẠM TÍNH: $%.2f%n", getTotalAmount());
     }
 }
